@@ -11,6 +11,10 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 3.0.0"
     }
+    get = {
+      source  = "cludden/get"
+      version = "0.1.0"
+    }
   }
 }
 
@@ -20,14 +24,17 @@ terraform {
 
 # provision lambda function
 resource "aws_lambda_function" "this" {
-  filename         = "${path.module}/benthos-lambda.zip"
-  function_name    = var.name
-  handler          = "benthos-lambda"
-  layers           = [aws_lambda_layer_version.gomplate.arn]
-  role             = var.role_arn != null ? var.role_arn : aws_iam_role.this.0.arn
-  runtime          = "go1.x"
-  source_code_hash = filebase64sha256("${path.module}/benthos-lambda.zip")
-  timeout          = var.timeout
+  description                    = var.description
+  filename                       = get_artifact.benthos.dest
+  function_name                  = var.name
+  handler                        = "benthos-lambda"
+  layers                         = [aws_lambda_layer_version.gomplate.arn]
+  memory_size                    = var.memory_size
+  reserved_concurrent_executions = var.reserved_concurrent_executions
+  role                           = var.role_arn != null ? var.role_arn : aws_iam_role.this.0.arn
+  runtime                        = "go1.x"
+  source_code_hash               = get_artifact.benthos.sum64
+  timeout                        = var.timeout
 
   environment {
     variables = merge(
@@ -44,15 +51,53 @@ resource "aws_lambda_function" "this" {
     )
   }
 
+  dynamic "vpc_config" {
+    for_each = length(var.subnet_ids) > 0 ? [1] : []
+
+    content {
+      security_group_ids = var.security_group_ids
+      subnet_ids         = var.subnet_ids
+    }
+  }
+
   depends_on = [
-    aws_cloudwatch_log_group.this
+    aws_cloudwatch_log_group.this,
   ]
 }
 
+# provision gomplate extension lambda layer
 resource "aws_lambda_layer_version" "gomplate" {
-  filename            = "${path.module}/gomplate-lambda-extension.zip"
+  filename            = get_artifact.gomplate.dest
   layer_name          = "${var.name}-gomplate"
   compatible_runtimes = ["go1.x"]
+
+  depends_on = [
+    get_artifact.gomplate,
+  ]
+}
+
+##############################
+## Artifacts
+##############################
+
+# download benthos-serverless distribution
+resource "get_artifact" "benthos" {
+  url      = "https://github.com/Jeffail/benthos/releases/download/v${var.benthos_version}/benthos-lambda_${var.benthos_version}_linux_amd64.zip"
+  checksum = "file:https://github.com/Jeffail/benthos/releases/download/v${var.benthos_version}/benthos_${var.benthos_version}_checksums.txt"
+  dest     = "benthos-lambda_${var.benthos_version}_linux_amd64.zip"
+  mode     = "file"
+  archive  = false
+  workdir  = abspath(path.root)
+}
+
+# download gomplate-lambda-extension distribution
+resource "get_artifact" "gomplate" {
+  url      = "https://github.com/cludden/gomplate-lambda-extension/releases/download/v${var.gomplate_version}/gomplate-lambda-extension_${var.gomplate_version}_linux_amd64.zip"
+  checksum = "file:https://github.com/cludden/gomplate-lambda-extension/releases/download/v${var.gomplate_version}/checksums.txt"
+  dest     = "gomplate-lambda-extension_${var.gomplate_version}_linux_amd64.zip"
+  mode     = "file"
+  archive  = false
+  workdir  = abspath(path.root)
 }
 
 ##############################

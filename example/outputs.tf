@@ -3,7 +3,7 @@ output "function" {
   value       = module.benthos_lambda
 }
 
-output "result" {
-  description = "function outputs"
-  value       = jsondecode(data.aws_lambda_invocation.test.result)
-}
+# output "result" {
+#   description = "function outputs"
+#   value       = jsondecode(data.aws_lambda_invocation.test.result)
+# }

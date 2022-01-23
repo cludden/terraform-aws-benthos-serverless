@@ -83,11 +83,6 @@ module "benthos_lambda" {
   config = <<-YAML
     pipeline:
       processors:
-      # filter out events we don't care about
-      - bloblang: |
-          let e = detail.LifecycleTransition.or("")
-          root = if $e != "autoscaling:EC2_INSTANCE_TERMINATING" { deleted() }
-
       # format slack chat.postMessage payload
       - bloblang: |
           channel = "{{ (ds "ssm" "slack-channel").Value }}"
