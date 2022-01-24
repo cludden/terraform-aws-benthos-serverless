@@ -30,7 +30,7 @@ variable "environment" {
 variable "gomplate_version" {
   description = "gomplate-lambda-extension artifact version"
   type        = string
-  default     = "0.1.1"
+  default     = "0.2.0"
 }
 
 variable "memory_size" {

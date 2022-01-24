@@ -29,27 +29,12 @@ module "benthos_lambda" {
       processors:
       # format slack chat.postMessage payload
       - bloblang: |
-          channel = "{{ (ds "ssm" "slack-channel").Value }}"
-          text = "EC2 Instance %s has been terminated.".format(detail.EC2InstanceId)
-          blocks = [{
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": "EC2 Instance `%s` has been terminated.".format(detail.EC2InstanceId)
-            }
-          }, {
-            "type": "context",
-            "elements": [{
-              "type": "mrkdwn",
-              "text": "*account:* %s".format(account)
-            }, {
-              "type": "mrkdwn",
-              "text": "*region:* %s".format(region)
-            }, {
-              "type": "mrkdwn",
-              "text": "*group:* %s".format(detail.AutoScalingGroupName)
-            }]
-          }]
+          root = this
+          sha256 = content().hash("hmac_sha256", "{{ (ds "ssm" "key").Value }}").encode("hex")
+      
+      # log response
+      - log:
+          message: "$${!content().string()}"
 
     output:
       switch:
@@ -59,12 +44,7 @@ module "benthos_lambda" {
           output:
             reject: "$${!error()}"
         - output:
-            http_client:
-              url: https://slack.com/api/chat.postMessage
-              propagate_response: true
-              headers:
-                Authorization: Bearer {{ (ds "ssm" "slack-token").Value }}
-                Content-Type: application/json; charset=utf-8
+            sync_response: {}
   YAML
 }
 ```
@@ -75,6 +55,7 @@ module "benthos_lambda" {
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
+| <a name="requirement_archive"></a> [archive](#requirement\_archive) | 2.2.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.0.0 |
 | <a name="requirement_get"></a> [get](#requirement\_get) | 0.1.0 |
 
@@ -82,6 +63,7 @@ module "benthos_lambda" {
 
 | Name | Version |
 |------|---------|
+| <a name="provider_archive"></a> [archive](#provider\_archive) | 2.2.0 |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.0.0 |
 | <a name="provider_get"></a> [get](#provider\_get) | 0.1.0 |
 
@@ -96,9 +78,11 @@ No modules.
 | [aws_cloudwatch_log_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_iam_role.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_lambda_function.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) | resource |
+| [aws_lambda_layer_version.config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_layer_version) | resource |
 | [aws_lambda_layer_version.gomplate](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_layer_version) | resource |
 | [get_artifact.benthos](https://registry.terraform.io/providers/cludden/get/0.1.0/docs/resources/artifact) | resource |
 | [get_artifact.gomplate](https://registry.terraform.io/providers/cludden/get/0.1.0/docs/resources/artifact) | resource |
+| [archive_file.config](https://registry.terraform.io/providers/hashicorp/archive/2.2.0/docs/data-sources/file) | data source |
 | [aws_iam_policy_document.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.trust](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 
@@ -111,7 +95,7 @@ No modules.
 | <a name="input_config_datasources"></a> [config\_datasources](#input\_config\_datasources) | map of gomplate datasources referenced by config | `map(string)` | `{}` | no |
 | <a name="input_description"></a> [description](#input\_description) | lambda function description | `string` | `"benthos-lambda"` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | map of additional environment variables | `map(string)` | `{}` | no |
-| <a name="input_gomplate_version"></a> [gomplate\_version](#input\_gomplate\_version) | gomplate-lambda-extension artifact version | `string` | `"0.1.1"` | no |
+| <a name="input_gomplate_version"></a> [gomplate\_version](#input\_gomplate\_version) | gomplate-lambda-extension artifact version | `string` | `"0.2.0"` | no |
 | <a name="input_memory_size"></a> [memory\_size](#input\_memory\_size) | amount of memory in MB your Lambda Function can use at runtime | `number` | `128` | no |
 | <a name="input_name"></a> [name](#input\_name) | function name | `string` | n/a | yes |
 | <a name="input_reserved_concurrent_executions"></a> [reserved\_concurrent\_executions](#input\_reserved\_concurrent\_executions) | amount of reserved concurrent executions for this lambda function | `number` | `-1` | no |

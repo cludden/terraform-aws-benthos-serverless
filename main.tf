@@ -7,6 +7,10 @@ terraform {
   experiments      = [module_variable_optional_attrs]
 
   required_providers {
+    archive = {
+      source  = "hashicorp/archive"
+      version = "2.2.0"
+    }
     aws = {
       source  = "hashicorp/aws"
       version = ">= 3.0.0"
@@ -19,6 +23,18 @@ terraform {
 }
 
 ################################################################################
+## Data Sources
+################################################################################
+
+# create .zip archive with benthos config
+data "archive_file" "config" {
+  type                    = "zip"
+  source_content          = var.config
+  source_content_filename = "benthos.tpl.yml"
+  output_path             = "${path.root}/benthos-serverless-${var.name}.config.zip"
+}
+
+################################################################################
 ## Resources
 ################################################################################
 
@@ -28,7 +44,6 @@ resource "aws_lambda_function" "this" {
   filename                       = get_artifact.benthos.dest
   function_name                  = var.name
   handler                        = "benthos-lambda"
-  layers                         = [aws_lambda_layer_version.gomplate.arn]
   memory_size                    = var.memory_size
   reserved_concurrent_executions = var.reserved_concurrent_executions
   role                           = var.role_arn != null ? var.role_arn : aws_iam_role.this.0.arn
@@ -36,13 +51,18 @@ resource "aws_lambda_function" "this" {
   source_code_hash               = get_artifact.benthos.sum64
   timeout                        = var.timeout
 
+  layers = [
+    aws_lambda_layer_version.gomplate.arn,
+    aws_lambda_layer_version.config.arn,
+  ]
+
   environment {
     variables = merge(
       var.environment,
       {
-        BENTHOS_CONFIG_PATH = "/tmp/benthos.yml"
-        GOMPLATE_INPUT      = var.config
-        GOMPLATE_OUTPUT     = "/tmp/benthos.yml"
+        BENTHOS_CONFIG_PATH    = "/tmp/benthos.yml"
+        GOMPLATE_INPUT_config  = "/opt/benthos.tpl.yml"
+        GOMPLATE_OUTPUT_config = "/tmp/benthos.yml"
       },
       {
         for dsk, dsv in var.config_datasources :
@@ -63,6 +83,18 @@ resource "aws_lambda_function" "this" {
   depends_on = [
     aws_cloudwatch_log_group.this,
   ]
+}
+
+# provision config archive as lambda layer
+resource "aws_lambda_layer_version" "config" {
+  filename            = data.archive_file.config.output_path
+  layer_name          = "${var.name}-config"
+  compatible_runtimes = ["go1.x"]
+  source_code_hash    = data.archive_file.config.output_base64sha256
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # provision gomplate extension lambda layer

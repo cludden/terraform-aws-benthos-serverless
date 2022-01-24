@@ -22,7 +22,7 @@
 
 | Name | Type |
 |------|------|
-| [aws_ssm_parameter.secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_lambda_invocation.test](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lambda_invocation) | data source |
 | [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
@@ -32,9 +32,8 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_key"></a> [key](#input\_key) | example credential | `string` | `"foo"` | no |
 | <a name="input_name"></a> [name](#input\_name) | function name | `string` | `"benthos-lambda-example"` | no |
-| <a name="input_slack_channel"></a> [slack\_channel](#input\_slack\_channel) | slack channel | `string` | n/a | yes |
-| <a name="input_slack_token"></a> [slack\_token](#input\_slack\_token) | slack api token | `string` | n/a | yes |
 
 ## Outputs
 

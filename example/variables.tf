@@ -4,14 +4,9 @@ variable "name" {
   default     = "benthos-lambda-example"
 }
 
-variable "slack_channel" {
-  description = "slack channel"
+variable "key" {
+  description = "example credential"
   type        = string
   sensitive   = true
-}
-
-variable "slack_token" {
-  description = "slack api token"
-  type        = string
-  sensitive   = true
+  default     = "foo"
 }
