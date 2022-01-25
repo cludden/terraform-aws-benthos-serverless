@@ -4,14 +4,10 @@ a Terraform module for deploying [Benthos](https://www.benthos.dev/) as an AWS L
 ## Getting Started
 ```terraform
 # store sensitive configuration in ssm parameter store
-resource "aws_ssm_parameter" "secrets" {
-  for_each = {
-    "slack-channel" = var.slack_channel
-    "slack-token"   = var.slack_token
-  }
-  name  = "/benthos-lambda-example/${each.key}"
+resource "aws_ssm_parameter" "key" {
+  name  = "/benthos-lambda-example/key"
   type  = "SecureString"
-  value = each.value
+  value = var.key
 }
 
 # deploy benthos lambda function using ssm as config datasource
