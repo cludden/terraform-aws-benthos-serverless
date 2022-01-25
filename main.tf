@@ -119,7 +119,7 @@ resource "get_artifact" "benthos" {
   dest     = "benthos-lambda_${var.benthos_version}_linux_amd64.zip"
   mode     = "file"
   archive  = false
-  workdir  = abspath(path.root)
+  workdir  = path.root
 }
 
 # download gomplate-lambda-extension distribution
@@ -129,7 +129,7 @@ resource "get_artifact" "gomplate" {
   dest     = "gomplate-lambda-extension_${var.gomplate_version}_linux_amd64.zip"
   mode     = "file"
   archive  = false
-  workdir  = abspath(path.root)
+  workdir  = path.root
 }
 
 ##############################
