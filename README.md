@@ -53,7 +53,7 @@ module "benthos_lambda" {
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
 | <a name="requirement_archive"></a> [archive](#requirement\_archive) | 2.2.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.0.0 |
-| <a name="requirement_get"></a> [get](#requirement\_get) | 0.1.0 |
+| <a name="requirement_get"></a> [get](#requirement\_get) | 0.1.1 |
 
 ## Providers
 
@@ -61,7 +61,7 @@ module "benthos_lambda" {
 |------|---------|
 | <a name="provider_archive"></a> [archive](#provider\_archive) | 2.2.0 |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.0.0 |
-| <a name="provider_get"></a> [get](#provider\_get) | 0.1.0 |
+| <a name="provider_get"></a> [get](#provider\_get) | 0.1.1 |
 
 ## Modules
 
@@ -76,8 +76,8 @@ No modules.
 | [aws_lambda_function.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) | resource |
 | [aws_lambda_layer_version.config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_layer_version) | resource |
 | [aws_lambda_layer_version.gomplate](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_layer_version) | resource |
-| [get_artifact.benthos](https://registry.terraform.io/providers/cludden/get/0.1.0/docs/resources/artifact) | resource |
-| [get_artifact.gomplate](https://registry.terraform.io/providers/cludden/get/0.1.0/docs/resources/artifact) | resource |
+| [get_artifact.benthos](https://registry.terraform.io/providers/cludden/get/0.1.1/docs/resources/artifact) | resource |
+| [get_artifact.gomplate](https://registry.terraform.io/providers/cludden/get/0.1.1/docs/resources/artifact) | resource |
 | [archive_file.config](https://registry.terraform.io/providers/hashicorp/archive/2.2.0/docs/data-sources/file) | data source |
 | [aws_iam_policy_document.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.trust](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
